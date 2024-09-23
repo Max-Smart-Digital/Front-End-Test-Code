@@ -1,0 +1,52 @@
+﻿
+@page "/Marketing Context"
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Data.SqlClient
+@using System.ComponentModel.DataAnnotations
+@using MAaGI_Front_End_V2.Models
+
+<PageTitle>Marketing Context</PageTitle>
+
+<h3>Marketing Context</h3>
+
+<EditForm Model="@queryModel" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputTextArea id="promptText" @bind-Value="queryModel.PromptText" maxlength="250" />
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private QueryModel queryModel = new QueryModel();
+
+    private async Task HandleSubmit()
+    {
+        var connectionString = "Server=tcp:maagitestdb.database.windows.net,1433;Initial Catalog=MAaGI_Test_DB_V1;Persist Security Info=False;User ID=maagiadmin;Password={Mark$Peter99};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+                var query = "INSERT INTO dbo.QueryTempTable (PromptText) VALUES (@PromptText)";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@PromptText", queryModel.PromptText);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        catch (SqlException ex)
+        {
+            // Handle SQL exceptions
+            Console.WriteLine($"SQL Error:Crap 1 {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // Handle all other exceptions
+            Console.WriteLine($"Error:crap 2 {ex.Message}");
+        }
+    }
+}
