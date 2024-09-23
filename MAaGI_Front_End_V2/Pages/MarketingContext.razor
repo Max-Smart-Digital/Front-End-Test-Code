@@ -18,35 +18,54 @@
     <button type="submit">Submit</button>
 </EditForm>
 
+@inject IConfiguration _configuration
+
 @code {
     private QueryModel queryModel = new QueryModel();
 
     private async Task HandleSubmit()
     {
-        var connectionString = "Server=tcp:maagitestdb.database.windows.net,1433;Initial Catalog=MAaGI_Test_DB_V1;Persist Security Info=False;User ID=maagiadmin;Password={Mark$Peter99};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-
+        string connectionString = "Server=tcp:maagitestdb.database.windows.net,1433;Initial Catalog=MAaGI_Test_DB_V1;Persist Security Info=False;User ID=maagiadmin;Password={Mark$Peter99};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+    
         try
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            await using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
-                var query = "INSERT INTO dbo.QueryTempTable (PromptText) VALUES (@PromptText)";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                // Perform database operations
+                // Example: Fetch data from a table
+                await using (SqlCommand command = new SqlCommand("SELECT TOP 1 * FROM dbo.QueryTempTable", connection))
                 {
-                    command.Parameters.AddWithValue("@PromptText", queryModel.PromptText);
-                    await command.ExecuteNonQueryAsync();
+                    await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            // Process the data
+                            var result = new
+                            {
+                                Column1 = reader["PromptText"].ToString(),
+                                Column2 = reader["PostOutcomeText"].ToString()
+                            };
+                            // Process the result as needed
+                            Console.WriteLine($"Result: {result.Column1}, {result.Column2}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No data found");
+                        }
+                    }
                 }
             }
         }
         catch (SqlException ex)
         {
             // Handle SQL exceptions
-            Console.WriteLine($"SQL Error:Crap 1 {ex.Message}");
+            Console.WriteLine($"SQL Error: {ex.Message}");
         }
         catch (Exception ex)
         {
             // Handle all other exceptions
-            Console.WriteLine($"Error:crap 2 {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }
