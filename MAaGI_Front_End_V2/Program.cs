@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MAaGI_Front_End_V2;
+using MAaGI_Front_End_V2.Shared; // Add this line to include the namespace where App is defined
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
